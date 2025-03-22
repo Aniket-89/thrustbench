@@ -1,42 +1,45 @@
-// Define the pin for the IR proximity sensor
-#define IR_SENSOR_PIN A0
+// Pin configuration
+const int sensorPin = 9;  // Digital pin connected to the "out" pin of the sensor
+int sensorState = 0;       // Variable to store the sensor state (HIGH or LOW)
+int lastState = HIGH;       // Variable to store the last state of the sensor
+unsigned long debounceDelay = 100;  // Debounce time in milliseconds
+unsigned long lastDebounceTime = 0;
 
-void setupIRSensor() {
-  pinMode(IR_SENSOR_PIN, INPUT);
-  Serial.println("IR proximity sensor initialized");
-}
-
-int readIRSensor() {
-  return analogRead(IR_SENSOR_PIN);
-}
-
-float convertToDistance(int sensorValue) {
-  // This conversion is an approximation and may need calibration
-  // for your specific sensor and environment
-  float voltage = sensorValue * (5.0 / 1023.0);
-  return 27.86 * pow(voltage, -1.15);
-}
-
-void printIRData() {
-  int rawValue = readIRSensor();
-  float distance = convertToDistance(rawValue);
+void setup() {
+  // Initialize the serial communication
+  Serial.begin(9600);
   
-  Serial.print("IR Sensor Raw Value: ");
-  Serial.print(rawValue);
-  Serial.print(", Estimated Distance: ");
-  Serial.print(distance);
-  Serial.println(" cm");
+  // Configure the sensor pin as an input
+  pinMode(sensorPin, INPUT);
 }
 
-// Call this function in your main setup()
-void setupIR() {
-  setupIRSensor();
+void loop() {
+  // Read the sensor's state (HIGH or LOW)
+  int reading = digitalRead(sensorPin);
+
+  // If the sensor reading has changed (due to noise or an object)
+  if (reading != lastState) {
+    lastDebounceTime = millis();  // Reset the debounce timer
+  }
+
+  // Check if enough time has passed to take a stable reading
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // If the sensor state has stabilized
+    if (reading != sensorState) {
+      sensorState = reading;
+
+      // Print the sensor state
+      if (sensorState == LOW) {
+        Serial.println("Object detected!");
+      } else {
+        Serial.println("No object detected.");
+      }
+    }
+  }
+
+  // Update the last sensor reading
+  lastState = reading;
+
+  // Small delay to avoid too frequent readings
+  delay(100);
 }
-
-// Call this function in your main loop() to read and print IR data
-void updateIR() {
-  printIRData();
-  delay(100); // Adjust delay as needed
-}
-
-

@@ -21,8 +21,8 @@ const unsigned long RAMP_DELAY = 75;  // Delay between speed increments (millise
 unsigned long lastRampTime = 0;
 
 // PWM signal range
-const int PWM_MIN = 1100;
-const int PWM_MAX = 1900;
+const int PWM_MIN = 1050;
+const int PWM_MAX = 1950;
 
 // Serial command handling
 String inputString = "";
